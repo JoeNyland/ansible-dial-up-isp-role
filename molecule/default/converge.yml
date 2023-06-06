@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include joenyland.dial_up_isp"
+      include_role:
+        name: "joenyland.dial_up_isp"
+      vars:
+        dial_up_isp_mgetty_service_enabled: false
+        dial_up_isp_mgetty_service_state: stopped

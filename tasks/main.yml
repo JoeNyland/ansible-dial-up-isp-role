@@ -1,0 +1,24 @@
+---
+- name: Setup Asterisk to handle calls
+  include_tasks: asterisk.yml
+  tags: asterisk
+
+- name: Setup mgetty to handle the modem
+  include_tasks: mgetty.yml
+  tags: mgetty
+
+- name: Setup PPP
+  include_tasks: ppp.yml
+  tags: ppp
+
+- name: Setup user
+  include_tasks: user.yml
+  tags: user
+
+- name: Setup Routing
+  include_tasks: routing.yml
+  tags: routing
+
+- name: Setup NAT
+  include_tasks: nat.yml
+  tags: nat

@@ -1,0 +1,74 @@
+---
+- name: Install ppp
+  apt:
+    name: ppp
+    update_cache: true
+  tags: ppp
+
+- name: Configure ppp
+  copy:
+    dest: /etc/ppp/options
+    mode: '0644'
+    content: |
+      # Define the DNS server for the client to use
+      ms-dns {{ dial_up_isp_dns_server }}
+
+      # Require the peer to authenticate itself before allowing network
+      # packets to be sent or received.
+      auth
+
+      # Require the peer to authenticate itself using PAP.
+      +pap
+
+      # Use hardware flow control (i.e. RTS/CTS) to control the flow of data
+      # on the serial port.
+      crtscts
+
+      # Specifies that pppd should use a UUCP-style lock on the serial device
+      # to ensure exclusive access to the device.
+      lock
+
+      # If this option is given, pppd will send an LCP echo-request frame to
+      # the peer every n seconds. Under Linux, the echo-request is sent when
+      # no packets have been received from the peer for n seconds. Normally
+      # the peer should respond to the echo-request by sending an echo-reply.
+      # This option can be used with the lcp-echo-failure option to detect
+      # that the peer is no longer connected.
+      lcp-echo-interval 30
+
+      # If this option is given, pppd will presume the peer to be dead if n
+      # LCP echo-requests are sent without receiving a valid LCP echo-reply.
+      # If this happens, pppd will terminate the connection.  Use of this
+      # option requires a non-zero value for the lcp-echo-interval parameter.
+      # This option can be used to enable pppd to terminate after the physical
+      # connection has been broken (e.g., the modem has hung up) in
+      # situations where no hardware modem control lines are available.
+      lcp-echo-failure 6
+
+      # Don't use the modem control lines.
+      local
+
+      # Add an entry to this system's ARP [Address Resolution Protocol]
+      # table with the IP address of the peer and the Ethernet address of this
+      # system.
+      proxyarp
+
+      # Disable the IPXCP and IPX protocols.
+      noipx
+
+      # async character map -- 32-bit hex; each bit is a character
+      # that needs to be escaped for pppd to receive it.  0x00000001
+      # represents '\x01', and 0x80000000 represents '\x1f'.
+      asyncmap 0
+  tags: ppp
+
+- name: Configure ppp (device)
+  copy:
+    dest: /etc/ppp/options.{{ dial_up_isp_modem_tty_device_name }}
+    mode: '0644'
+    content: |
+      # Define gateway, client IP address and netmask
+      {{ dial_up_isp_gateway }}:{{ dial_up_isp_client_address }}
+      netmask {{ dial_up_isp_netmask }}
+
+  tags: ppp

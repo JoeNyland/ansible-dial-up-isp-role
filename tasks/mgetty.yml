@@ -1,0 +1,61 @@
+---
+- name: Install mgetty
+  apt:
+    name: mgetty
+    update_cache: true
+  tags: mgetty
+
+- name: Configure mgetty debug level
+  lineinfile:
+    path: /etc/mgetty/mgetty.config
+    regexp: ^debug\s\d
+    line: debug {{ dial_up_isp_modem_debug_level }}
+  tags: mgetty
+
+- name: Setup mgetty
+  blockinfile:
+    path: /etc/mgetty/mgetty.config
+    block: |
+      port {{ dial_up_isp_modem_tty_device_name }}
+        # Turns off fax support
+        data-only yes
+
+        # Every 60s, check the modem has not crashed
+        modem-check-time 60
+
+        # Initialisation string to send to the modem
+        init-chat {{ dial_up_isp_modem_init_string }}
+    mode: '0644'
+  notify: Restart mgetty
+  tags: mgetty
+
+- name: Setup systemd service
+  copy:
+    dest: /etc/systemd/system/mgetty@.service
+    content: |
+      [Unit]
+      Description=External Modem %I
+      Documentation=man:mgetty(8)
+      Requires=systemd-udev-settle.service
+      After=systemd-udev-settle.service
+
+      [Service]
+      Type=simple
+      ExecStart=/sbin/mgetty /dev/%i
+      Restart=always
+      PIDFile=/run/mgetty.pid.%i
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+  notify: Restart mgetty
+  register: dial_up_isp_mgetty_systemd_service_file
+  tags: mgetty
+
+- name: Manage mgetty service
+  systemd:
+    daemon_reload: "{{ dial_up_isp_mgetty_systemd_service_file.changed }}" # So that the above file is read, when changed
+    name: mgetty@{{ dial_up_isp_modem_tty_device_path | basename }}
+    enabled: "{{ dial_up_isp_mgetty_service_enabled }}"
+    state: "{{ dial_up_isp_mgetty_service_state }}"
+  tags: mgetty

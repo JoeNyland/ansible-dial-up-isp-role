@@ -1,0 +1,12 @@
+---
+- name: Reload Asterisk
+  service:
+    name: asterisk
+    state: reloaded
+  when: dial_up_isp_asterisk_service_enabled and dial_up_isp_asterisk_service_state == 'started'
+
+- name: Restart mgetty
+  service:
+    name: mgetty@{{ dial_up_isp_modem_tty_device_name }}
+    state: restarted
+  when: dial_up_isp_mgetty_service_enabled and dial_up_isp_mgetty_service_state == 'started'

@@ -1,0 +1,64 @@
+---
+# SIP credentials for the line on the ATA where the ISP modem will connect to the PBX.
+dial_up_isp_isp_sip_user_name: isp
+dial_up_isp_isp_sip_user_password: password
+
+# SIP credentials for the line on the ATA where the client modem will connect to the PBX.
+dial_up_isp_client_sip_user_name: client
+dial_up_isp_client_sip_user_password: password
+
+# What number should the client dial in to to access the internet?
+dial_up_isp_number: 0800123123
+
+# Client authentication details to the ISP.
+dial_up_isp_user_name: client
+dial_up_isp_password: password
+
+# Network CIDR
+dial_up_isp_network_cidr: 192.168.32.0/24
+
+# IP address to assign to the client.
+# Must be within dial_up_isp_network_cidr.
+dial_up_isp_client_address: 192.168.32.2
+
+# Default gateway for the client.
+# Must be within dial_up_isp_network_cidr.
+dial_up_isp_gateway: 192.168.32.1
+
+# Netmask for client.
+# Must be equivalent to the mask defined in dial_up_isp_network_cidr.
+dial_up_isp_netmask: 255.255.255.0
+
+# DNS server for the client to use.
+dial_up_isp_dns_server: 1.1.1.1
+
+# The ISP's connection to the internet.
+# Usually eth0.
+dial_up_isp_wan_interface: "{{ ansible_default_ipv4.interface }}"
+
+# Modem initialisation string.
+# The following works for a USRobotics Courier 56K V.92 Business Modem.
+# Q0 Sets the modem to display result codes, which are needed by mgetty.
+# V1 Sets the modem to display result codes verbally, which is needed by
+# mgetty.
+# H0 Sets the modem to on hook (hang up), allowing it to receive calls.
+# &F1 Loads the hardware flow control configuration template.
+# S0=0 Sets the amount of rings before the modem auto answers a call to
+# 0, effectively disabling auto-answer. This is necessary, as mgetty
+# needs to answer the call itself.
+dial_up_isp_modem_init_string: '"" ATQ0V1H0&F1S0=0 OK'
+
+# Device path for the serial connection to the ISP modem.
+# Assumes a single USB to serial adaptor
+dial_up_isp_modem_tty_device_path: /dev/ttyUSB0
+
+# Controls for the PBX (Asterisk).
+dial_up_isp_asterisk_service_enabled: true
+dial_up_isp_asterisk_service_state: started
+
+# Controls for the modem.
+dial_up_isp_mgetty_service_enabled: true
+dial_up_isp_mgetty_service_state: started
+
+# Sets the debugging level from the ISP modem.
+dial_up_isp_modem_debug_level: 4

@@ -1,0 +1,31 @@
+---
+- name: Install iptables
+  apt:
+    name:
+      - iptables
+      - iptables-persistent
+    update_cache: true
+  tags: nat
+
+- name: Enable NAT using iptables
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: "{{ dial_up_isp_network_cidr }}"
+    jump: MASQUERADE
+    out_interface: "{{ dial_up_isp_wan_interface }}"
+  tags: nat
+
+- name: Save iptables rule
+  community.general.iptables_state:
+    state: saved
+    table: nat
+    path: /etc/iptables/rules.v4
+  tags: nat
+
+- name: Ensure iptables rules are loaded at boot
+  service:
+    name: netfilter-persistent
+    state: started
+    enabled: true
+  tags: nat

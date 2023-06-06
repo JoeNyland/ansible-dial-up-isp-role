@@ -1,0 +1,20 @@
+---
+- name: Create user
+  user:
+    name: "{{ dial_up_isp_user_name }}"
+    group: users
+    groups:
+      - dialout
+      - dip
+      - users
+    password: "{{ dial_up_isp_password | password_hash('sha512', 'salt') }}"
+    shell: /usr/sbin/pppd
+  tags: user
+
+- name: Set password
+  blockinfile:
+    path: /etc/ppp/pap-secrets
+    mode: '0600'
+    block: |
+      {{ dial_up_isp_user_name }} * "{{ dial_up_isp_password }}" *
+  tags: user

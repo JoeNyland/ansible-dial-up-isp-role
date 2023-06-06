@@ -1,0 +1,55 @@
+---
+- name: Install Asterisk
+  apt:
+    name: asterisk
+    update_cache: true
+  tags: asterisk
+
+- name: Configure SIP peers for extensions
+  blockinfile:
+    path: /etc/asterisk/sip.conf
+    marker: "; {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      [general]
+      context=default
+
+      [{{ dial_up_isp_isp_sip_user_name }}]
+      type=friend
+      context=from-internal
+      host=dynamic
+      qualify=yes
+      secret={{ dial_up_isp_isp_sip_user_password }}
+      disallow=all
+      allow=ulaw
+      nat=no
+      directmedia=yes
+
+      [{{ dial_up_isp_client_sip_user_name }}]
+      type=friend
+      context=from-internal
+      host=dynamic
+      qualify=yes
+      secret={{ dial_up_isp_client_sip_user_password }}
+      disallow=all
+      allow=ulaw
+      nat=no
+      directmedia=yes
+  notify: Reload Asterisk
+  tags: asterisk
+
+- name: Configure extensions
+  blockinfile:
+    path: /etc/asterisk/extensions.conf
+    marker: "; {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      [from-internal]
+      exten=>{{ dial_up_isp_number }},1,Dial(SIP/{{ dial_up_isp_isp_sip_user_name }},30)
+  notify: Reload Asterisk
+  tags: asterisk
+
+- name: Manage Asterisk service
+  systemd:
+    name: asterisk
+    enabled: "{{ dial_up_isp_asterisk_service_enabled }}"
+    state: "{{ dial_up_isp_asterisk_service_state }}"
+  tags: asterisk
